@@ -14,18 +14,14 @@ export async function loadModels() {
 
 
 export async function getFullFaceDescription(blob) {
-  // tiny_face_detector options
   const scoreThreshold = 0.5;
   const OPTION = new faceapi.SsdMobilenetv1Options({
     minConfidence: scoreThreshold,
   });
-  // const useTinyModel = true;
 
   // fetch image to api
   const img = await faceapi.fetchImage(blob);
 
-  // detect all faces and generate full description from image
-  // including landmark and descriptor of each face
   const fullDesc = await faceapi
     .detectAllFaces(img, OPTION)
     .withFaceLandmarks()
