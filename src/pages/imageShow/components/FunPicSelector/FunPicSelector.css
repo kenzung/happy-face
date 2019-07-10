@@ -1,0 +1,6 @@
+.funpic-selector-container {
+  display: flex;
+  overflow: auto;
+  width: 100%;
+  flex: 1;
+}

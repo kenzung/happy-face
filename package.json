@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "antd-mobile": "^2.2.14",
     "face-api.js": "^0.20.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
