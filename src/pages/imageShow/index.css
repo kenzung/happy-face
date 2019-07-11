@@ -1,4 +1,8 @@
 .image-show {
-  margin: auto;
+  margin: 12px auto;
   max-width: 400px;
+}
+
+.image-show__upload-btn {
+  margin-bottom: 12px;
 }

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import { } from 'antd-mobile';
+import { Button } from 'antd-mobile';
 import ImageRect from './components/ImageRect';
 import * as api from '../../api';
 import FunPicSelector from './components/FunPicSelector';
 import './index.css';
 import test from '../../assets/sylm2.png';
 
-async function analyze() {
+async function analyze(img) {
   await api.loadModels();
-  const desc = await api.getFullFaceDescription(test);
+  const desc = await api.getFullFaceDescription(img);
   return desc;
 }
 
@@ -17,17 +17,26 @@ class ImageShow extends Component {
     super(props);
     this.state = {
       imgUrl: test,
-      loading: false,
       boxInfos: [],
     };
   }
 
-
   async componentDidMount() {
-    this.setState({ loading: true });
-    const boxInfos = await analyze();
-    console.log(boxInfos);
-    this.setState({ loading: false, boxInfos });
+    this.handleGetBoxes();
+  }
+
+  async imageFileChange(evt) {
+    await this.setState({
+      imgUrl: URL.createObjectURL(evt.target.files[0]),
+      boxInfos: [],
+    });
+    this.handleGetBoxes();
+  }
+
+  async handleGetBoxes() {
+    const { imgUrl } = this.state;
+    const boxInfos = await analyze(imgUrl);
+    this.setState({ boxInfos });
   }
 
   renderBox() {
@@ -55,13 +64,14 @@ class ImageShow extends Component {
   }
 
   render() {
-    const { loading, boxInfos, imgUrl } = this.state;
-    console.log(loading);
+    const { boxInfos, imgUrl } = this.state;
     return (
       <div className="image-show">
+        <input type="file" accept="image/png, image/jpeg" onChange={this.imageFileChange.bind(this)} />
+        <Button className="image-show__upload-btn">点击上传图片</Button>
         <div style={{ position: 'relative' }}>
           {boxInfos.length > 0 && this.renderBox()}
-          <img src={imgUrl} alt="十元" style={{ width: '100%' }} />
+          <img src={imgUrl} alt="" style={{ width: '100%' }} />
         </div>
         <FunPicSelector />
       </div>
