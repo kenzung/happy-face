@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { Button } from 'antd-mobile';
-import ImageRect from './components/ImageRect';
+import ImageRect from '../../components/ImageRect';
 import * as api from '../../api';
-import FunPicSelector from './components/FunPicSelector';
+// import FunPicSelector from './components/FunPicSelector';
 import './index.css';
-import test from '../../assets/sylm2.png';
+import test from '../../assets/test.jpg';
 
 async function analyze(img) {
-  await api.loadModels();
   const desc = await api.getFullFaceDescription(img);
   return desc;
 }
@@ -15,6 +14,7 @@ async function analyze(img) {
 class ImageShow extends Component {
   constructor(props) {
     super(props);
+    this.imgUrl = test;
     this.state = {
       imgUrl: test,
       boxInfos: [],
@@ -22,21 +22,37 @@ class ImageShow extends Component {
   }
 
   async componentDidMount() {
+    await api.loadModels();
     this.handleGetBoxes();
   }
 
-  async imageFileChange(evt) {
-    await this.setState({
-      imgUrl: URL.createObjectURL(evt.target.files[0]),
+  imageFileChange(evt) {
+    const fileName = evt.target.files[0];
+    if (!fileName) {
+      return;
+    }
+    const imgUrl = URL.createObjectURL(fileName);
+    this.imgUrl = imgUrl;
+    this.setState({
+      imgUrl,
       boxInfos: [],
     });
     this.handleGetBoxes();
   }
 
   async handleGetBoxes() {
-    const { imgUrl } = this.state;
-    const boxInfos = await analyze(imgUrl);
-    this.setState({ boxInfos });
+    const boxInfos = await analyze(this.imgUrl);
+    const faceMatcher = api.createFatherMatcher();
+    const newBoxInfos = boxInfos.map((fd) => {
+      const bestMatch = faceMatcher.findBestMatch(fd.descriptor);
+      console.log(bestMatch.toString());
+      return {
+        ...fd,
+        label: bestMatch.label,
+      };
+    });
+    console.log(newBoxInfos);
+    this.setState({ boxInfos: newBoxInfos });
   }
 
   renderBox() {
@@ -44,12 +60,17 @@ class ImageShow extends Component {
     const { innerWidth } = window;
     return boxInfos.map((boxInfo, i) => {
       const {
-        box: {
-          width, height, x, y,
+        detection: {
+
+          box: {
+            width, height, x, y,
+          },
+          imageWidth,
         },
-        imageWidth,
-      } = boxInfo.detection;
+        label,
+      } = boxInfo;
       const ratio = innerWidth / imageWidth;
+      console.log('label', label);
       return (
         <ImageRect
           // eslint-disable-next-line
@@ -58,6 +79,7 @@ class ImageShow extends Component {
           height={height * ratio}
           x={x * ratio}
           y={y * ratio}
+          label={label}
         />
       );
     });
@@ -73,7 +95,7 @@ class ImageShow extends Component {
           {boxInfos.length > 0 && this.renderBox()}
           <img src={imgUrl} alt="" style={{ width: '100%' }} />
         </div>
-        <FunPicSelector />
+        {/* <FunPicSelector /> */}
       </div>
     );
   }

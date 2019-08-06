@@ -1,9 +1,10 @@
 import * as faceapi from 'face-api.js';
+import descriptions from '../descriptors/desc.json';
 
 // Load models and weights
-export async function loadModels() {
+export function loadModels() {
   const MODEL_URL = `${process.env.PUBLIC_URL}/models`;
-  await Promise.all([
+  return Promise.all([
     faceapi.loadSsdMobilenetv1Model(MODEL_URL),
     faceapi.loadAgeGenderModel(MODEL_URL),
     faceapi.loadFaceExpressionModel(MODEL_URL),
@@ -29,4 +30,16 @@ export async function getFullFaceDescription(blob) {
     .withFaceDescriptors()
     .withFaceExpressions();
   return fullDesc;
+}
+
+
+export function createFatherMatcher(maxDescriptorDistance = 0.5) {
+  const labeledDescriptors = Object.keys(descriptions).map((k) => {
+    const { name, descriptors: desc } = descriptions[k];
+    return new faceapi.LabeledFaceDescriptors(
+      name,
+      desc.map(d => new Float32Array(d)),
+    );
+  });
+  return new faceapi.FaceMatcher(labeledDescriptors, maxDescriptorDistance);
 }
